@@ -43,6 +43,7 @@ public class FunctionalLesson {
             }
         });
     }
+    //сортируем числа в порядке возрастания суммы остатков деления на 10 числа(деление происходит до тех пор пока оно не станет меньше нуля)(наверное)
 
     public void sort_f(List<Integer> list) {
         Collections.sort(list,(o1, o2)->{
@@ -118,7 +119,10 @@ public class FunctionalLesson {
 
     public String ustas2alex_f(List<String> words) {
         StringBuilder sb = new StringBuilder(words.size());
-        words.forEach(w->sb.append(w.charAt(w.length() / 2)));
+        words
+                .parallelStream()
+                .forEachOrdered(w->sb.append(w.charAt(w.length() / 2)));
+
         return sb.toString();
     }
 
@@ -135,8 +139,17 @@ public class FunctionalLesson {
 
     public String properties_f(Map<String, Object> map) {
         StringBuilder sb = new StringBuilder();
-        map.forEach((i, s) -> sb.append(String.format("%s=%s\n", i, s)));
+                map.entrySet()
+               .parallelStream()
+               .forEach(entry -> sb.append(String.format("%s=%s\n",entry.getKey(), entry.getKey())));
+
+                //не получается так
+//       return map.entrySet()
+//                .parallelStream()
+//                .forEach(entry -> String.join("%s=%s\n",entry.getKey(), entry.getKey()));
+//
         return sb.toString();
+
     }
 
     /**
@@ -234,36 +247,20 @@ public class FunctionalLesson {
         List<String> words = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(THIS_FILE))
         ) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] newWords = line.split(WORD_DELIMITERS);
-                for (String w: newWords) {
-                    if(w.toLowerCase().startsWith("f")) {
+            ArrayList<String> lines = new ArrayList<>(reader.lines().collect(toList()));
+            for (String element: lines) {
+                String[] newWords = element.split(WORD_DELIMITERS);
+                for (String w : newWords) {
+                    if (w.toLowerCase().startsWith("f")& !words.contains(w)) {
                         words.add(w);
                     }
                 }
             }
         }
+        Collections.sort(words);
 
-        List<String> uniqueWords = new ArrayList<>();
-        for (String w: words) {
-            if(!uniqueWords.contains(w)) {
-                uniqueWords.add(w);
-            }
-        }
-        Collections.sort(uniqueWords);
+        return String.join(" ", words);
 
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        for (String w: uniqueWords) {
-            if(first) {
-                first = false;
-            } else {
-                result.append(" ");
-            }
-            result.append(w);
-        }
-        return result.toString();
     }
 
     /** Hint: Collectors.joining() helps a lot! */
